@@ -190,29 +190,37 @@ class App extends Component {
 
   onReroute() {
     // TODO|eddy
-    // fetch('https://mywebsite.com/endpoint/', { // fill this in
-    //   method: 'POST',
-    //   headers: {
-    //     'Accept': 'application/json',
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     origin: this.state.origin,
-    //     destination: this.state.destination,
-    //     speed: this.state.speed,
-    //   })
-    // }).then((response) => {
-      let response = this.sampleResponse; // TODO Eddy uncomment so that it uses the actual response
+    const formData = new FormData();
+    formData.append('startLat', this.state.origin.lat);
+    formData.append('startLon', this.state.origin.lon);
+    formData.append('endLat', this.state.destination.lat);
+    formData.append('endLon', this.state.destination.lon);
+    const startLat = this.state.origin.lat;
+    const startLon = this.state.origin.lon;
+    const endLat = this.state.destination.lat;
+    const endLon = this.state.destination.lon;
+    // TODO|eddy add in walkSpeed from this.state.speed here
+    return fetch(`http://127.0.0.1:5000/?startLat=${startLat}&startLon=${startLon}&endLat=${endLat}&endLon=${endLon}`, { // fill this in
+       method: 'POST',
+       headers: {
+         'Accept': 'application/json',
+       },
+     }).then((response) => {
+    //  let response = this.sampleResponse; // TODO Eddy uncomment so that it uses the actual response
       // TODO Eddy you might need to double check that the shape of the data is exactly as expected
-      this.setState({
-        routes: response.body.itineraries,
-        curRoute: response.body.itineraries[0],
-      }, this.renderRoute);
-    // }); // TODO EDDY also uncomment
+      console.log(response);
+      return response.json().then((itineraries => {
+        console.log(itineraries);
+        return this.setState({
+          routes: itineraries,
+          curRoute: itineraries[0],
+        }, this.renderRoute);
+      }));
+     }); // TODO EDDY also uncomment
   }
 
   onClick = () => {
-    this.onReroute();
+    return this.onReroute();
   }
 
   renderInputter() {
@@ -369,7 +377,7 @@ class App extends Component {
           <p>Honk</p>
         </header>
         {this.renderInputter()}
-        <button style={{marginLeft: 10}} onClick={this.onClick}>
+        <button style={{marginLeft: 10}} onClick={() => this.onClick()}>
           SEE ROUTES
         </button>
         {this.renderTable()}
