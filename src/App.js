@@ -1,13 +1,17 @@
 import React, { Component } from 'react';
 import './App.css';
 import ReactMapGL, {Marker} from 'react-map-gl';
+import WebMercatorViewport from 'viewport-mercator-project';
 
 class App extends Component {
 
+  width = 600;
+  height = 600;
+
   state = {
     viewport: {
-      width: 600,
-      height: 600,
+      width: this.width,
+      height: this.height,
       latitude: 43.7577,
       longitude: -80.4376,
       zoom: 8
@@ -21,7 +25,10 @@ class App extends Component {
       lon:  -80.540021,
     },
     walkSpeed: 1,
-    geometry: {},
+    geometry: {
+      "type": "LineString",
+      "coordinates": [],
+    },
   };
 
   geometrySample = {
@@ -35,7 +42,22 @@ class App extends Component {
 
   componentDidMount() {
     console.log('in onComponentDidRender' + this.state.geometry);
-    this.setState({geometry: this.geometrySample}, this.renderRoute());
+    this.setState({
+      geometry: this.geometrySample
+    }, this.renderRoute);
+  }
+
+  updateViewport(latitude, longitude, zoom) {
+    console.log("in updateViewport");
+    this.setState({
+      viewport: {
+        width: this.width,
+        height: this.height,
+        latitude,
+        longitude,
+        zoom,
+      },
+    });
   }
 
   updateOrigin(lat, lon) {
@@ -80,7 +102,15 @@ class App extends Component {
             "line-width": 3
         }
       })
-    })
+    });
+    map.fitBounds(this.state.geometry.coordinates);
+    const viewport = new WebMercatorViewport({width: this.width, height: this.height});
+    const bound = viewport.fitBounds(
+      this.state.geometry.coordinates,
+      {padding: 100}
+    );
+    const {latitude, longitude, zoom} = bound;
+    this.updateViewport(latitude, longitude, zoom);
   }
 
   onGo() {
@@ -106,19 +136,26 @@ class App extends Component {
   render() {
     return (
       <React.Fragment>
-        <ReactMapGL
-          ref={(reactMap) => { this.reactMap = reactMap; }}
-          {...this.state.viewport}
-          onViewportChange={(viewport) => this.setState({viewport})}
-          mapboxApiAccessToken={"pk.eyJ1IjoiZWRkeWlvbmVzY3UiLCJhIjoiY2ptM3Y2amJvMTk5bzNxcWdxOWM5MHdubiJ9.rz-F-5ZhxO_GtGezg-6pDg"}
-        >
-          <Marker latitude={this.state.origin.lat} longitude={this.state.origin.lon}>
-            orig
-          </Marker>
-          <Marker latitude={this.state.destination.lat} longitude={this.state.destination.lon}>
-            dest
-          </Marker>
-        </ReactMapGL>
+        <header className="App-header" style={{height: 100}}>
+          <h1 className="App-title">GooseRoute</h1>
+          <p>Honk</p>
+        </header>
+
+        <div style={{margin: 10}}>
+          <ReactMapGL
+            ref={(reactMap) => { this.reactMap = reactMap; }}
+            {...this.state.viewport}
+            onViewportChange={(viewport) => this.setState({viewport})}
+            mapboxApiAccessToken={"pk.eyJ1IjoiZWRkeWlvbmVzY3UiLCJhIjoiY2ptM3Y2amJvMTk5bzNxcWdxOWM5MHdubiJ9.rz-F-5ZhxO_GtGezg-6pDg"}
+          >
+            <Marker latitude={this.state.origin.lat} longitude={this.state.origin.lon}>
+              orig
+            </Marker>
+            <Marker latitude={this.state.destination.lat} longitude={this.state.destination.lon}>
+              dest
+            </Marker>
+          </ReactMapGL>
+        </div>
       </React.Fragment>
     );
   }
