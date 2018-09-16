@@ -336,8 +336,8 @@ class App extends Component {
                       Segment {segInd}
                     </header>
                     By: {seg.mode},
-                    From: {seg.shape.coordinates[0]},
-                    To: {seg.shape.coordinates[1]},
+                    From: {JSON.parse(seg.shape).coordinates[0]},
+                    To: {JSON.parse(seg.shape).coordinates[1]},
                     Start Time: {seg.startTime},
                     End Time: {seg.endTime},
                     Duration: {seg.duration},
