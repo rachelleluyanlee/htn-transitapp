@@ -2,6 +2,10 @@ import React, { Component } from 'react';
 import './App.css';
 import ReactMapGL, {Marker} from 'react-map-gl';
 import WebMercatorViewport from 'viewport-mercator-project';
+import PlacesAutocomplete, {
+  geocodeByAddress,
+  getLatLng,
+} from 'react-places-autocomplete';
 
 class App extends Component {
 
@@ -29,6 +33,8 @@ class App extends Component {
       "type": "LineString",
       "coordinates": [],
     },
+    originLocation: '',
+    destinationLocation: '',
   };
 
   geometrySample = {
@@ -67,7 +73,7 @@ class App extends Component {
         lon,
       }
     });
-  } 
+  }
 
   updateDestination(lat, lon) {
     this.setState({
@@ -77,6 +83,29 @@ class App extends Component {
       }
     });
   }
+  handleChangeOrigin = originLocation => {
+    this.setState({ originLocation });
+  };
+
+  handleSelectOrigin = originLocation => {
+    this.setState({ originLocation });
+    geocodeByAddress(originLocation)
+      .then(results => getLatLng(results[0]))
+      .then(latLng => console.log('Success', latLng))
+      .catch(error => console.error('Error', error));
+  };
+  handleChangeDest = destinationLocation => {
+    this.setState({ destinationLocation });
+  };
+
+  handleSelectDest = destinationLocation => {
+    this.setState({ destinationLocation });
+    geocodeByAddress(destinationLocation)
+      .then(results => getLatLng(results[0]))
+      .then(latLng => console.log('Success', latLng))
+      .catch(error => console.error('Error', error));
+  };
+
 
   renderRoute() {
     const map = this.reactMap.getMap();
@@ -128,7 +157,7 @@ class App extends Component {
     }).then((response) => {
       console.log("response: " + response);
       this.setState({
-        geometry: response.body.geometry, // todo update this with matching form .. 
+        geometry: response.body.geometry, // todo update this with matching form ..
       })
     });
   }
@@ -156,6 +185,89 @@ class App extends Component {
             </Marker>
           </ReactMapGL>
         </div>
+        <React.Fragment>
+          <label>
+            <PlacesAutocomplete
+             value={this.state.originLocation}
+             onChange={this.handleChangeOrigin}
+             onSelect={this.handleSelectOrigin}
+           >
+             {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
+               <div>
+                 Origin:<input
+                   {...getInputProps({
+                     placeholder: 'Search Places ...',
+                     className: 'location-search-input',
+                   })}
+                 />
+                 <div className="autocomplete-dropdown-container">
+                   {loading && <div>Loading...</div>}
+                   {suggestions.map(suggestion => {
+                     const className = suggestion.active
+                       ? 'suggestion-item--active'
+                       : 'suggestion-item';
+                     // inline style for demonstration purpose
+                     const style = suggestion.active
+                       ? { backgroundColor: '#fafafa', cursor: 'pointer' }
+                       : { backgroundColor: '#ffffff', cursor: 'pointer' };
+                     return (
+                       <div
+                         {...getSuggestionItemProps(suggestion, {
+                           className,
+                           style,
+                         })}
+                       >
+                         <span>{suggestion.description}</span>
+                       </div>
+                     );
+                   })}
+                 </div>
+               </div>
+             )}
+           </PlacesAutocomplete>
+          </label>
+          <label>
+          <PlacesAutocomplete
+           value={this.state.destinationLocation}
+           onChange={this.handleChangeDest}
+           onSelect={this.handleSelectDest}
+         >
+           {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
+             <div>
+               Destination:<input
+                 {...getInputProps({
+                   placeholder: 'Search Places ...',
+                   className: 'location-search-input',
+                 })}
+               />
+               <div className="autocomplete-dropdown-container">
+                 {loading && <div>Loading...</div>}
+                 {suggestions.map(suggestion => {
+                   const className = suggestion.active
+                     ? 'suggestion-item--active'
+                     : 'suggestion-item';
+                   // inline style for demonstration purpose
+                   const style = suggestion.active
+                     ? { backgroundColor: '#fafafa', cursor: 'pointer' }
+                     : { backgroundColor: '#ffffff', cursor: 'pointer' };
+                   return (
+                     <div
+                       {...getSuggestionItemProps(suggestion, {
+                         className,
+                         style,
+                       })}
+                     >
+                       <span>{suggestion.description}</span>
+                     </div>
+                   );
+                 })}
+               </div>
+             </div>
+           )}
+         </PlacesAutocomplete>
+         </label>
+
+        </React.Fragment>
       </React.Fragment>
     );
   }
